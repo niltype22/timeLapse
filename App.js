@@ -9,18 +9,25 @@ import {
 import { Camera, Permissions } from "expo";
 
 export default class App extends React.Component {
-  state = {
-    hasCameraPermission: false,
-    type: Camera.Constants.Type.back,
-    photoTaken: false
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasCameraPermission: false,
+      type: Camera.Constants.Type.back,
+      secondIntervals: 10,
+      interval: null,
+      recording: false,
+      toggleIcon: 'play',
+    };
+    this.toggleRecording = this.toggleRecording.bind(this)
+  }
 
   async componentDidMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({ hasCameraPermission: status === "granted" });
   }
 
-  switchCamera = async () => {
+  switchCamera() {
     this.setState({
       type:
         this.state.type === Camera.Constants.Type.back
@@ -30,14 +37,25 @@ export default class App extends React.Component {
   };
 
   takePhoto = async () => {
-    console.log(this.camera);
     if (this.camera) {
       await this.camera.takePictureAsync({
         onPictureSaved: data => {
           CameraRoll.saveToCameraRoll(data.uri, "photo");
-          alert("snap");
+          // replace with upload.
         }
       });
+    }
+  };
+
+  toggleRecording() {
+    if (this.state.recording) {
+      clearInterval(this.state.interval);
+      this.setState({toggleIcon: 'play', recording: !this.state.recording });
+    } else {
+      let interval = setInterval(() => {
+        this.takePhoto()
+      }, this.state.secondIntervals * 1000);
+      this.setState({ interval, recording: !this.state.recording, toggleIcon: 'stop' });
     }
   };
 
@@ -60,10 +78,10 @@ export default class App extends React.Component {
           />
           <Text>Open up App.js to start working on your app! Test 1</Text>
           <TouchableOpacity
-            onPress={() => this.takePhoto()}
+            onPress={() => this.toggleRecording()}
             style={styles.playButton}
           >
-            <Text>Play</Text>
+            <Text>{this.state.toggleIcon}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.switchCamera()}>
             <Text>Switch camera</Text>
