@@ -3,8 +3,10 @@ import {
   StyleSheet,
   Text,
   View,
+  ScrollView,
   CameraRoll,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput
 } from "react-native";
 import { Camera, Permissions } from "expo";
 
@@ -14,10 +16,11 @@ export default class App extends React.Component {
     this.state = {
       hasCameraPermission: false,
       type: Camera.Constants.Type.back,
-      secondIntervals: 10,
+      secondIntervals: '10',
       interval: null,
       recording: false,
       toggleIcon: 'play',
+      endpoint: 'https://google.com/api'
     };
     this.toggleRecording = this.toggleRecording.bind(this)
   }
@@ -68,7 +71,19 @@ export default class App extends React.Component {
       return <Text>No access to camera</Text>;
     } else {
       return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
+          <TextInput
+            keyboardType = 'numeric'
+            style={{height: 40, borderColor: 'gray', borderWidth: 1, width: 50}}
+            onChangeText={(secondIntervals) => this.setState({ secondIntervals })}
+            value={this.state.secondIntervals}
+          />
+          <TextInput
+            style={{height: 40, borderColor: 'gray', borderWidth: 1, width: 200}}
+            onChangeText={(secondIntervals) => this.setState({ secondIntervals })}
+            value={this.state.endpoint}
+          />
+
           <Camera
             ref={ref => {
               this.camera = ref;
@@ -86,7 +101,7 @@ export default class App extends React.Component {
           <TouchableOpacity onPress={() => this.switchCamera()}>
             <Text>Switch camera</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       );
     }
   }
@@ -96,8 +111,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center"
   },
   playButton: {
     backgroundColor: "rgba(0,0,0,0.1)"
