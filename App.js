@@ -20,7 +20,7 @@ export default class App extends React.Component {
       interval: null,
       recording: false,
       toggleIcon: 'play',
-      endpoint: 'https://google.com/api'
+      endpoint: 'https://freestaff.herokuapp.com/'
     };
     this.toggleRecording = this.toggleRecording.bind(this)
   }
@@ -43,12 +43,35 @@ export default class App extends React.Component {
     if (this.camera) {
       await this.camera.takePictureAsync({
         onPictureSaved: data => {
-          CameraRoll.saveToCameraRoll(data.uri, "photo");
-          // replace with upload.
+          CameraRoll.saveToCameraRoll(data.uri, "photo"); // remove later or allow option?
+          this.uploadImageAsync(data.uri)
         }
       });
     }
   };
+
+  uploadImageAsync = async (uri) => {
+    let uriParts = uri.split('.');
+    let fileType = uriParts[uriParts.length - 1];
+  
+    let formData = new FormData();
+    formData.append('photo', {
+      uri,
+      name: `photo.${fileType}`,
+      type: `image/${fileType}`,
+    });
+
+    let options = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+  
+    return fetch(this.state.endpoint, options);
+  }
 
   toggleRecording() {
     if (this.state.recording) {
