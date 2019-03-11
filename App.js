@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   TextInput
 } from "react-native";
-import { Camera, Permissions } from "expo";
+import { Camera, Permissions, Font } from "expo";
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 
 export default class App extends React.Component {
   constructor(props) {
@@ -20,7 +21,8 @@ export default class App extends React.Component {
       interval: null,
       recording: false,
       toggleIcon: 'play',
-      endpoint: 'https://freestaff.herokuapp.com/'
+      endpoint: 'https://freestaff.herokuapp.com/',
+      fontLoaded: false,
     };
     this.toggleRecording = this.toggleRecording.bind(this)
   }
@@ -28,6 +30,10 @@ export default class App extends React.Component {
   async componentDidMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({ hasCameraPermission: status === "granted" });
+    await Font.loadAsync({
+      'proxima-nova': require('./assets/ProximaNovaReg.ttf'),
+    });
+    this.setState({ fontLoaded: true });
   }
 
   switchCamera() {
@@ -94,7 +100,30 @@ export default class App extends React.Component {
       return <Text>No access to camera</Text>;
     } else {
       return (
-        <ScrollView style={styles.container}>
+        <ScrollView contentContainerStyle={{ display:'flex', flexDirection: 'column', height: '100%' }}>
+          <View style={styles.title}>
+            {
+              this.state.fontLoaded ? (
+                <View>
+                  <Text style={{ fontFamily: 'proxima-nova', fontSize: 26, textAlign: 'center' }}>
+                    TimeLapser
+                  </Text>
+                  <Text style={{ fontFamily: 'proxima-nova', fontSize: 16, textAlign: 'center' }}>
+                    Click play to begin capturing
+                  </Text>
+                </View>
+              ) : null
+            }
+          </View>
+          <View style={{flexGrow:1, display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+            <TouchableOpacity
+              onPress={() => this.toggleRecording()}
+              style={styles.playButton}
+            >
+              <FontAwesomeIcon name={this.state.toggleIcon} size={55} style={{ color: '#ccc', textAlign: 'center' }} />
+            </TouchableOpacity>
+
+          </View>
           <TextInput
             keyboardType = 'numeric'
             style={{height: 40, borderColor: 'gray', borderWidth: 1, width: 50}}
@@ -111,16 +140,9 @@ export default class App extends React.Component {
             ref={ref => {
               this.camera = ref;
             }}
-            style={{ height: 100, width: 100 }}
+            style={{ height: 200, width: 200 }}
             type={this.state.type}
           />
-          <Text>Open up App.js to start working on your app! Test 1</Text>
-          <TouchableOpacity
-            onPress={() => this.toggleRecording()}
-            style={styles.playButton}
-          >
-            <Text>{this.state.toggleIcon}</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => this.switchCamera()}>
             <Text>Switch camera</Text>
           </TouchableOpacity>
@@ -132,10 +154,22 @@ export default class App extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: "red",
+    height: '100%',
   },
   playButton: {
-    backgroundColor: "rgba(0,0,0,0.1)"
-  }
+    textAlign: 'center'
+  }, 
+  title: {
+    width: '100%',
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    textAlign: 'center',
+    flexDirection: 'column',
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+
 });
